@@ -10,14 +10,6 @@ import (
 	"time"
 )
 
-func cwd() string {
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	return cwd
-}
-
 var (
 	app = kingpin.New("go-svr", `Super simple Golang HTTP server.
 It hosts --js files under /js, --css files under /css, and --html files under /
@@ -35,7 +27,7 @@ Otherwise, it serves out files that exist in whatever --html points to.
 `)
 	js   = app.Flag("js", "hosted javascript folder to map to /js.  Default expects a folder named 'js' in the current working directory").Short('j').Default("js").String()
 	css  = app.Flag("css", "hosted css folder to map to /css.  Default expects a folder named 'css' in the current working directory").Short('c').Default("css").String()
-	html = app.Flag("html", "hosted set of HTML files to serve out of /. Default is the current working directory.").Short('h').Default(cwd()).String()
+	html = app.Flag("html", "hosted set of HTML files to serve out of /. Default is the current working directory.").Short('h').Default(".").String()
 	port = app.Flag("port", "TCP port to host the HTTP traffic on.").Short('p').Default(":8080").String()
 )
 
@@ -57,7 +49,6 @@ func main() {
 	router.PathPrefix("/js/").Handler(http.StripPrefix("/js/", http.FileServer(http.Dir(*js))))
 	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir(*css))))
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir(*html)))
-	// router.Handle("/", http.FileServer(http.Dir(*html)))
 	fmt.Println("Starting server on", *port)
 	http.ListenAndServe(*port, router)
 }
